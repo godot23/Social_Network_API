@@ -77,17 +77,15 @@ module.exports = {
 
     async addFriend(req, res) {
         try {
-            const friend = await User.findOne(
-                    {_id: req.params.friendId}
+            const userData= await User.findOneAndUpdate(
+                    {_id: req.params.userId,},
+                    {$addToSet: {friends: req.params.friendId}},
+                    {new: true}
                 )
-            .then(data => {
-                const user = User.findOneandUpdate(
-                    {
-                        _id: req.params.userId,
-                        $addToSet: {friends: User.data}
-                    }
-                )
-            })
+                if(!userData){
+                    res.status(404).json({message: "user not found"})
+                }
+           res.status(200).json(userData)
         }
         catch (err) {
             console.log(err);
@@ -97,15 +95,15 @@ module.exports = {
 
     async deleteFriend(req, res) {
         try {
-            const user = await User.findOneAndDelete(
-                {
-                    _id: req.body.id,
-                    $removeFromSet: { friends: user._id }
-                }
+            const userData = await User.findOneAndUpdate(
+                {_id: req.params.userId,},
+                {$pull: {friends: req.params.friendId}},
+                {new: true}
             )
-            if(!user){
+            if(!userData){
                 res.status(404).json({message: "user not found"})
             }
+            res.status(200).json(userData)
         }
         catch (err) {
             res.status(500).json(err)
